@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useHistory } from 'react-router-dom';
+import { removeToken } from '../utils/token';
 import Logo from './Logo.js';
 import './styles/NavBar.css';
 
@@ -7,8 +8,8 @@ import './styles/NavBar.css';
 function NavBar () {
   const history = useHistory();
   function signOut(){
-    localStorage.removeItem('jwt');
-    history.push('/register');
+    removeToken()
+    history.push('/login');
   }
   return (
     <div className="navbar">

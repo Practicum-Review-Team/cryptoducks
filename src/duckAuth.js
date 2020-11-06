@@ -1,3 +1,5 @@
+import { setToken } from './utils/token';
+
 export const BASE_URL = 'https://api.nomoreparties.co';
 
 export const register = (username, password, email) => {
@@ -17,6 +19,7 @@ export const register = (username, password, email) => {
   })
   .catch((err) => console.log(err));
 };
+
 export const authorize = (identifier, password) => {
   return fetch(`${BASE_URL}/auth/local`, {
     method: 'POST',
@@ -29,7 +32,7 @@ export const authorize = (identifier, password) => {
   .then((response => response.json()))
   .then((data) => {
     if (data.user){
-      localStorage.setItem('jwt', data.jwt);
+      setToken(data.jwt);
       return data;
     } else {
       return;
@@ -37,6 +40,7 @@ export const authorize = (identifier, password) => {
   })
   .catch(err => console.log(err))
 };
+
 export const getContent = (token) => {
   return fetch(`${BASE_URL}/users/me`, {
     method: 'GET',
@@ -47,7 +51,6 @@ export const getContent = (token) => {
     }
   })
   .then(res => res.json())
-  .then(data => data)
 }
 
 

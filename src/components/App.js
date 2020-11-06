@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Route, Switch, Redirect, withRouter } from 'react-router-dom';
-import Login from './Login.js';
-import Register from './Register.js';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
+import * as duckAuth from '../duckAuth.js';
+import { getToken } from '../utils/token';
 import Ducks from './Ducks.js';
+import Login from './Login.js';
 import MyProfile from './MyProfile.js';
 import ProtectedRoute from './ProtectedRoute';
-import * as duckAuth from '../duckAuth.js';
+import Register from './Register.js';
 import './styles/App.css';
 
-class App extends React.Component {
+class ___App extends React.Component {
   constructor(props){
     super(props);
     this.state = {
@@ -17,15 +18,21 @@ class App extends React.Component {
     this.tokenCheck = this.tokenCheck.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
   }
+
   componentDidMount() {
     this.tokenCheck();
   };
-  handleLogin(){
+
+
+  handleLogin(userData) {
     this.setState({
-      loggedIn: true
+      loggedIn: true,
+      userData,
     })
   }
+
   tokenCheck = () => {
+    const { location } = this.props;
     if (localStorage.getItem('jwt')){
       let jwt = localStorage.getItem('jwt');
       duckAuth.getContent(jwt).then((res) => {
@@ -38,12 +45,13 @@ class App extends React.Component {
             loggedIn: true,
             userData
           }, () => {
-            this.props.history.push("/ducks");
+            this.props.history.push(location.path);
           });
         }
-      }); 
+      });
     }
   }
+
   render(){
     return (
       <Switch>
@@ -54,11 +62,7 @@ class App extends React.Component {
             <Login handleLogin={this.handleLogin} tokenCheck={this.tokenCheck} />
           </div>
         </Route>
-        <Route path="/register">
-          <div className="registerContainer">
-            <Register />
-          </div>
-        </Route>
+        <Route path="/register" component={() => import('./Register')}/>
         <Route>
           {this.state.loggedIn ? <Redirect to="/ducks" /> : <Redirect to="/login" />}
         </Route>
@@ -67,4 +71,59 @@ class App extends React.Component {
   }
 }
 
-export default withRouter(App);
+const App = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userData, setUserData] = useState({ username: '', email: ''});
+  const history = useHistory();
+
+  const handleLogin = (userData) => {
+    setUserData(userData);
+    setLoggedIn(true);
+  }
+
+  const tokenCheck = () => {
+    const jwt = getToken();
+
+    if (!jwt) {
+      return;
+    }
+
+    duckAuth.getContent(jwt).then((res) => {
+      if (res) {
+        const userData = {
+          username: res.username,
+          email: res.email
+        }
+        setLoggedIn(true);
+        setUserData(userData);
+        history.push('/ducks')
+      }
+    });
+  }
+
+    useEffect(() => {
+      tokenCheck();
+  }, []);
+
+    return (
+      <Switch>
+        <ProtectedRoute path="/ducks" loggedIn={loggedIn} component={Ducks} />
+        <ProtectedRoute path="/my-profile" loggedIn={loggedIn} userData={userData} component={MyProfile} />
+        <Route path="/login">
+          <div className="loginContainer">
+            <Login handleLogin={handleLogin} />
+          </div>
+        </Route>
+        <Route path="/register">
+          <div className="registerContainer">
+            <Register />
+          </div>
+        </Route>
+        <Route>
+          {loggedIn ? <Redirect to="/ducks" /> : <Redirect to="/login" />}
+        </Route>
+      </Switch>
+    )
+}
+
+export default App;

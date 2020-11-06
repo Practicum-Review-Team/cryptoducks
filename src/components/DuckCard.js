@@ -6,7 +6,7 @@ function DuckCard (props) {
   return (
     <div className="duck-card">
       <div className="duck-card__image">
-        <img className="duck-card__png" src={duck.img} />
+        <img className="duck-card__png" src={duck.img} alt="" />
       </div>
       <div className="duck-card__desc">
         <p className="duck-card__name">

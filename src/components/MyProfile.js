@@ -2,8 +2,8 @@ import React from 'react';
 import NavBar from './NavBar.js';
 import './styles/MyProfile.css';
 
-function MyProfile (props) {
-  let { username, email} = props.userData;
+function MyProfile ({ userData = {} }) {
+  const { username, email} = userData;
   return (
     <>
       <NavBar />
